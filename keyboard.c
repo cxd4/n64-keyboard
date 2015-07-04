@@ -145,8 +145,9 @@ EXPORT void CALL WM_KeyDown(unsigned int wParam, i32 lParam)
 {
     size_t message;
 
-    assert(wParam == 0 || lParam == 0); /* Linux seems to expect lParam. */
-    message = (wParam != 0) ? wParam : (size_t)lParam;
+    message = wParam; /* normally the correct key code message */
+    if (message == 0 && lParam != 0 && lParam <= 32767)
+        message = (size_t)lParam; /* Mupen64 for Linux uses lParam instead. */
     controllers[0].Value |=  translate_OS_key_press(message);
     return;
 }
@@ -155,8 +156,9 @@ EXPORT void CALL WM_KeyUp(unsigned int wParam, i32 lParam)
 {
     size_t message;
 
-    assert(wParam == 0 || lParam == 0);
-    message = (wParam != 0) ? wParam : (size_t)lParam;
+    message = wParam;
+    if (message == 0 && lParam != 0 && lParam <= 32767)
+        message = (size_t)lParam;
     controllers[0].Value &= ~translate_OS_key_press(message);
     return;
 }
