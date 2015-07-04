@@ -67,6 +67,13 @@
 #include <stdint.h>
 #endif
 
+#ifndef FALSE
+#define FALSE       0
+#endif
+#ifndef TRUE
+#define TRUE        1
+#endif
+
 /*
  * With or without external or internal support for <stdint.h>, we need to
  * confirm the level of support for RCP data types on the Nintendo 64.
