@@ -83,3 +83,53 @@ EXPORT void CALL InitiateControllers(p_void hMainWindow, CONTROL Controls[4])
 #endif
     return;
 }
+
+static NOINLINE u32 translate_OS_key_press(size_t signal);
+
+EXPORT void CALL WM_KeyDown(unsigned int wParam, i32 lParam)
+{
+    size_t message;
+
+    assert(wParam == 0 || lParam == 0); /* Linux seems to expect lParam. */
+    message = (wParam != 0) ? wParam : (size_t)lParam;
+    controllers[0].Value |=  translate_OS_key_press(message);
+    return;
+}
+
+EXPORT void CALL WM_KeyUp(unsigned int wParam, i32 lParam)
+{
+    size_t message;
+
+    assert(wParam == 0 || lParam == 0);
+    message = (wParam != 0) ? wParam : (size_t)lParam;
+    controllers[0].Value &= ~translate_OS_key_press(message);
+    return;
+}
+
+static NOINLINE u32 translate_OS_key_press(size_t signal)
+{
+    u32 mask;
+
+#if defined(_WIN32) || defined(_WIN64)
+    switch (signal)
+    {
+    case 0xBA: /* VK_OEM_1 (`;:`) */
+        signal = ';';
+        break;
+    case 0xDE: /* VK_OEM_7 (`':`) */
+        signal = '\'';
+        break;
+    }
+#elif defined(_SDL_H)
+/* SDL 1.2 I think mostly maps as much to ASCII as possible...SDL 2.0 dunno? */
+#else
+#error Untested keyboard interface--does your operating system match ASCII?
+#endif
+
+    mask = 0x00000000;
+    switch (signal)
+    {
+/* N64 button masks go here. */
+    }
+    return (mask);
+}
