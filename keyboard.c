@@ -22,23 +22,15 @@ static const int swapped_bytes =
 
 pu16 press_masks;
 
-static u32 swap32by8(u32 word)
+static u16 swap16by8(u16 word)
 {
-    u8 a, b, c, d;
-    u32 swapped;
+    u16 swapped;
 
-    a = (u8)(((word & 0xFF000000ul) >> 24) & 0xFF);
-    b = (u8)(((word & 0x00FF0000ul) >> 16) & 0xFF);
-    c = (u8)(((word & 0x0000FF00ul) >>  8) & 0xFF);
-    d = (u8)(((word & 0x000000FFul) >>  0) & 0xFF);
-
-    swapped = 0x00000000
-      | ((u32)d << 24)
-      | ((u32)c << 16)
-      | ((u32)b <<  8)
-      | ((u32)a <<  0)
+    swapped = 0x0000
+      | ((word & 0x00FFu) << 8)
+      | ((word & 0xFF00u) >> 8)
     ;
-    return (swapped &= 0xFFFFFFFFul);
+    return (swapped &= 0xFFFFu);
 }
 
 EXPORT void CALL GetDllInfo(PLUGIN_INFO * PluginInfo)
@@ -139,7 +131,7 @@ EXPORT void CALL InitiateControllers(p_void hMainWindow, CONTROL Controls[4])
     return;
 }
 
-static NOINLINE u32 translate_OS_key_press(size_t signal);
+static NOINLINE u16 translate_OS_key_press(size_t signal);
 
 EXPORT void CALL WM_KeyDown(unsigned int wParam, i32 lParam)
 {
@@ -163,9 +155,9 @@ EXPORT void CALL WM_KeyUp(unsigned int wParam, i32 lParam)
     return;
 }
 
-static NOINLINE u32 translate_OS_key_press(size_t signal)
+static NOINLINE u16 translate_OS_key_press(size_t signal)
 {
-    u32 mask;
+    u16 mask;
 
 #if defined(_WIN32) || defined(_WIN64)
     switch (signal)
@@ -184,5 +176,5 @@ static NOINLINE u32 translate_OS_key_press(size_t signal)
 #endif
 
     mask = press_masks[signal];
-    return (swapped_bytes ? swap32by8(mask) : mask);
+    return (swapped_bytes ? swap16by8(mask) : mask);
 }
