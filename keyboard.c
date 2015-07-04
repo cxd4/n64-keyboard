@@ -1,8 +1,13 @@
+#include <assert.h>
 #include <string.h>
 
 /* to do:  have working controller #1.1 implementation */
 #define SPECS_VERSION           0x0100
 #include "contr.h"
+
+/* to do:  Wasn't there some old design when this could be 8? */
+#define MAX_CONTROLLERS         4
+static BUTTONS controllers[MAX_CONTROLLERS];
 
 EXPORT void CALL GetDllInfo(PLUGIN_INFO * PluginInfo)
 {
@@ -22,5 +27,27 @@ EXPORT void CALL GetDllInfo(PLUGIN_INFO * PluginInfo)
     *(memory_swapped) = 1; /* Project64 1.4 reads this as an endian flag. */
 
     strcpy(name, "System Keyboard");
+    return;
+}
+
+EXPORT void CALL CloseDLL(void)
+{
+    return;
+}
+
+EXPORT void CALL RomClosed(void)
+{
+    return;
+}
+
+EXPORT void CALL RomOpen(void)
+{
+    return;
+}
+
+EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
+{
+    assert(Control < MAX_CONTROLLERS);
+    Keys -> Value = controllers[Control].Value;
     return;
 }
