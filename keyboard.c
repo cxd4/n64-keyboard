@@ -83,7 +83,12 @@ EXPORT void CALL RomOpen(void)
     press_masks['U'] = MASK_L_TRIG;
 
  /* to do:  possibly implement the 2 reserved button flags as accelerators? */
- /* to do:  implement directional/digital joypad right/left/down/up */
+
+    press_masks[KEYBOARD_RIGHT] = MASK_R_JPAD;
+    press_masks[KEYBOARD_LEFT ] = MASK_L_JPAD;
+    press_masks[KEYBOARD_DOWN ] = MASK_D_JPAD;
+    press_masks[KEYBOARD_UP   ] = MASK_U_JPAD;
+
     press_masks['E'] = MASK_START_BUTTON;
     press_masks['O'] = MASK_Z_TRIG;
     press_masks['K'] = MASK_B_BUTTON;
@@ -162,6 +167,19 @@ static NOINLINE u16 translate_OS_key_press(size_t signal)
 #if defined(_WIN32) || defined(_WIN64)
     switch (signal)
     {
+    case 0x25: /* VK_LEFT */
+        signal = KEYBOARD_LEFT;
+        break;
+    case 0x26: /* VK_UP */
+        signal = KEYBOARD_UP;
+        break;
+    case 0x27: /* VK_RIGHT */
+        signal = KEYBOARD_RIGHT;
+        break;
+    case 0x28: /* VK_DOWN */
+        signal = KEYBOARD_DOWN;
+        break;
+
     case 0xBA: /* VK_OEM_1 (`;:`) */
         signal = ';';
         break;
@@ -169,10 +187,26 @@ static NOINLINE u16 translate_OS_key_press(size_t signal)
         signal = '\'';
         break;
     }
-#elif defined(_SDL_H)
-/* SDL 1.2 I think mostly maps as much to ASCII as possible...SDL 2.0 dunno? */
 #else
-#error Untested keyboard interface--does your operating system match ASCII?
+    switch (signal & 0xFFFF) /* SDL 2.0 might mask in bit 30. */
+    {
+    case 273: /* SDLK_UP in SDL 1.x */
+    case 82: /* SDLK_UP & SDL_SCANCODE_UP in SDL 2 */
+        signal = KEYBOARD_UP;
+        break;
+    case 274: /* SDLK_DOWN in SDL 1.x */
+    case 81: /* SDLK_DOWN & SDL_SCANCODE_DOWN in SDL 2 */
+        signal = KEYBOARD_DOWN;
+        break;
+    case 275: /* SDLK_RIGHT in SDL 1.x */
+    case 79: /* SDLK_RIGHT & SDL_SCANCODE_RIGHT in SDL 2 */
+        signal = KEYBOARD_RIGHT;
+        break;
+    case 276: /* SDLK_LEFT in SDL 1.x */
+    case 80: /* SDLK_LEFT & SDL_SCANCODE_LEFT in SDL 2 */
+        signal = KEYBOARD_LEFT;
+        break;
+    }
 #endif
 
     mask = press_masks[signal];

@@ -20,6 +20,28 @@
 #define MASK_B_BUTTON           (1u << 14)
 #define MASK_A_BUTTON           (1u << 15)
 
+/*
+ * The four directional arrow keys on the keyboard have no character
+ * representation, at least under ASCII, so we will use the ASCII characters:
+ *     up   :  SOH (start of heading)
+ *     left :  STX (start of text)
+ *     right:  ETX (end of text)
+ *     down :  EOT (end of transmission)
+ *
+ * Little else can be done since the other ASCII code points are used up.
+ * The only other vacant group of four code points seems to be ASCII+28 (FS).
+ */
+#if 0
+#define DIRECTIONAL_BASE        '\28'
+#else
+#define DIRECTIONAL_BASE        '\1'
+#endif
+
+#define KEYBOARD_UP             (DIRECTIONAL_BASE + 0)
+#define KEYBOARD_LEFT           (DIRECTIONAL_BASE + 1)
+#define KEYBOARD_RIGHT          (DIRECTIONAL_BASE + 2)
+#define KEYBOARD_DOWN           (DIRECTIONAL_BASE + 3)
+
 #include "contr.h"
 
 /*
