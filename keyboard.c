@@ -1,13 +1,45 @@
 #include <assert.h>
+#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 
 /* to do:  have working controller #1.1 implementation */
 #define SPECS_VERSION           0x0100
 #include "contr.h"
+#include "buttons.h"
 
 /* to do:  Wasn't there some old design when this could be 8? */
 #define MAX_CONTROLLERS         4
 static BUTTONS controllers[MAX_CONTROLLERS];
+
+static const int swapped_bytes =
+#if (ENDIAN_M != 0)
+    1
+#else
+    0
+#endif
+;
+
+pu16 press_masks;
+
+static u32 swap32by8(u32 word)
+{
+    u8 a, b, c, d;
+    u32 swapped;
+
+    a = (u8)(((word & 0xFF000000ul) >> 24) & 0xFF);
+    b = (u8)(((word & 0x00FF0000ul) >> 16) & 0xFF);
+    c = (u8)(((word & 0x0000FF00ul) >>  8) & 0xFF);
+    d = (u8)(((word & 0x000000FFul) >>  0) & 0xFF);
+
+    swapped = 0x00000000
+      | ((u32)d << 24)
+      | ((u32)c << 16)
+      | ((u32)b <<  8)
+      | ((u32)a <<  0)
+    ;
+    return (swapped &= 0xFFFFFFFFul);
+}
 
 EXPORT void CALL GetDllInfo(PLUGIN_INFO * PluginInfo)
 {
@@ -24,7 +56,7 @@ EXPORT void CALL GetDllInfo(PLUGIN_INFO * PluginInfo)
     *(system_version) = SPECS_VERSION;
     *(plugin_type)    = PLUGIN_TYPE_CONTROLLER;
     *(memory_normal)  = 0;
-    *(memory_swapped) = 1; /* Project64 1.4 reads this as an endian flag. */
+    *(memory_swapped) = swapped_bytes;
 
     strcpy(name, "System Keyboard");
     return;
@@ -32,16 +64,38 @@ EXPORT void CALL GetDllInfo(PLUGIN_INFO * PluginInfo)
 
 EXPORT void CALL CloseDLL(void)
 {
+    RomClosed();
     return;
 }
 
 EXPORT void CALL RomClosed(void)
 {
+    free(press_masks);
     return;
 }
 
 EXPORT void CALL RomOpen(void)
 {
+    const size_t possible_characters = 128; /* assumes ASCII keyboard input */
+
+    press_masks = (pu16)malloc(possible_characters * sizeof(u16));
+    assert(press_masks != NULL);
+
+    memset(press_masks, MASK_NO_BUTTONS, possible_characters * sizeof(u16));
+
+    press_masks['\'']= MASK_C_RIGHT;
+    press_masks['L'] = MASK_C_LEFT;
+    press_masks[';'] = MASK_C_DOWN;
+    press_masks['P'] = MASK_C_UP;
+    press_masks['I'] = MASK_R_TRIG;
+    press_masks['U'] = MASK_L_TRIG;
+
+ /* to do:  possibly implement the 2 reserved button flags as accelerators? */
+ /* to do:  implement directional/digital joypad right/left/down/up */
+    press_masks['E'] = MASK_START_BUTTON;
+    press_masks['O'] = MASK_Z_TRIG;
+    press_masks['K'] = MASK_B_BUTTON;
+    press_masks['J'] = MASK_A_BUTTON;
     return;
 }
 
@@ -78,6 +132,7 @@ EXPORT void CALL InitiateControllers(p_void hMainWindow, CONTROL Controls[4])
     Controls[0].RawData = FALSE;
     Controls[0].Plugin = PLUGIN_MEMPAK;
 
+    RomOpen();
 #if (SPECS_VERSION == 0x0100)
     hMainWindow = hMainWindow; /* unused */
 #endif
@@ -126,10 +181,6 @@ static NOINLINE u32 translate_OS_key_press(size_t signal)
 #error Untested keyboard interface--does your operating system match ASCII?
 #endif
 
-    mask = 0x00000000;
-    switch (signal)
-    {
-/* N64 button masks go here. */
-    }
-    return (mask);
+    mask = press_masks[signal];
+    return (swapped_bytes ? swap32by8(mask) : mask);
 }
