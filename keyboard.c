@@ -48,6 +48,7 @@ EXPORT void CALL RomOpen(void)
 EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
 {
     assert(Control < MAX_CONTROLLERS);
+    assert(Keys != NULL);
     Keys -> Value = controllers[Control].Value;
     return;
 }
