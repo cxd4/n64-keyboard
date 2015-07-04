@@ -52,3 +52,34 @@ EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
     Keys -> Value = controllers[Control].Value;
     return;
 }
+
+#if (SPECS_VERSION > 0x0100)
+EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
+#else
+EXPORT void CALL InitiateControllers(p_void hMainWindow, CONTROL Controls[4])
+#endif
+{
+    register int i;
+
+    for (i = 0; i < MAX_CONTROLLERS; i++)
+    {
+        Controls[i].Present = FALSE;
+        Controls[i].RawData = FALSE;
+        Controls[i].Plugin = PLUGIN_NONE;
+    }
+
+/*
+ * Raw data (low-level emulation of the controller serial commands) is not
+ * yet emulated, and there is not a whole lot of open room for custom
+ * settings to configure without it.  At the very least, Controller 1
+ * should be plugged in, with mempak support from the core.
+ */
+    Controls[0].Present = TRUE;
+    Controls[0].RawData = FALSE;
+    Controls[0].Plugin = PLUGIN_MEMPAK;
+
+#if (SPECS_VERSION == 0x0100)
+    hMainWindow = hMainWindow; /* unused */
+#endif
+    return;
+}
