@@ -136,79 +136,67 @@ EXPORT void CALL InitiateControllers(p_void hMainWindow, CONTROL Controls[4])
     return;
 }
 
-static NOINLINE u16 translate_OS_key_press(size_t signal);
+static NOINLINE size_t filter_OS_key_code(size_t signal);
 
 EXPORT void CALL WM_KeyDown(unsigned int wParam, i32 lParam)
 {
     size_t message;
+    u16 mask;
 
     message = wParam; /* normally the correct key code message */
     if (message == 0 && lParam != 0 && lParam <= 32767)
         message = (size_t)lParam; /* Mupen64 for Linux uses lParam instead. */
-    controllers[0].Value |=  translate_OS_key_press(message);
+
+    message = filter_OS_key_code(message);
+    mask = press_masks[message];
+    controllers[0].Value |=  (swapped_bytes ? swap16by8(mask) : mask);
     return;
 }
 
 EXPORT void CALL WM_KeyUp(unsigned int wParam, i32 lParam)
 {
     size_t message;
+    u16 mask;
 
     message = wParam;
     if (message == 0 && lParam != 0 && lParam <= 32767)
         message = (size_t)lParam;
-    controllers[0].Value &= ~translate_OS_key_press(message);
+
+    message = filter_OS_key_code(message);
+    mask = press_masks[message];
+    controllers[0].Value &= ~(swapped_bytes ? swap16by8(mask) : mask);
     return;
 }
 
-static NOINLINE u16 translate_OS_key_press(size_t signal)
+static NOINLINE size_t filter_OS_key_code(size_t signal)
 {
-    u16 mask;
-
 #if defined(_WIN32) || defined(_WIN64)
     switch (signal)
     {
-    case 0x25: /* VK_LEFT */
-        signal = KEYBOARD_LEFT;
-        break;
-    case 0x26: /* VK_UP */
-        signal = KEYBOARD_UP;
-        break;
-    case 0x27: /* VK_RIGHT */
-        signal = KEYBOARD_RIGHT;
-        break;
-    case 0x28: /* VK_DOWN */
-        signal = KEYBOARD_DOWN;
-        break;
+    case 0x25:  return KEYBOARD_LEFT; /* from VK_LEFT */
+    case 0x26:  return KEYBOARD_UP; /* from VK_UP */
+    case 0x27:  return KEYBOARD_RIGHT; /* from VK_RIGHT */
+    case 0x28:  return KEYBOARD_DOWN; /* from VK_DOWN */
 
-    case 0xBA: /* VK_OEM_1 (`;:`) */
-        signal = ';';
-        break;
-    case 0xDE: /* VK_OEM_7 (`':`) */
-        signal = '\'';
-        break;
+    case 0xBA:  return ';'; /* from VK_OEM_1 (`;:`) */
+    case 0xDE:  return '\''; /* from VK_OEM_7 (`':`) */
     }
 #else
     switch (signal & 0xFFFF) /* SDL 2.0 might mask in bit 30. */
     {
     case 273: /* SDLK_UP in SDL 1.x */
     case 82: /* SDLK_UP & SDL_SCANCODE_UP in SDL 2 */
-        signal = KEYBOARD_UP;
-        break;
+        return KEYBOARD_UP;
     case 274: /* SDLK_DOWN in SDL 1.x */
     case 81: /* SDLK_DOWN & SDL_SCANCODE_DOWN in SDL 2 */
-        signal = KEYBOARD_DOWN;
-        break;
+        return KEYBOARD_DOWN;
     case 275: /* SDLK_RIGHT in SDL 1.x */
     case 79: /* SDLK_RIGHT & SDL_SCANCODE_RIGHT in SDL 2 */
-        signal = KEYBOARD_RIGHT;
-        break;
+        return KEYBOARD_RIGHT;
     case 276: /* SDLK_LEFT in SDL 1.x */
     case 80: /* SDLK_LEFT & SDL_SCANCODE_LEFT in SDL 2 */
-        signal = KEYBOARD_LEFT;
-        break;
+        return KEYBOARD_LEFT;
     }
 #endif
-
-    mask = press_masks[signal];
-    return (swapped_bytes ? swap16by8(mask) : mask);
+    return (signal);
 }
