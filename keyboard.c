@@ -93,6 +93,11 @@ EXPORT void CALL RomOpen(void)
     press_masks['O'] = MASK_Z_TRIG;
     press_masks['K'] = MASK_B_BUTTON;
     press_masks['J'] = MASK_A_BUTTON;
+
+    press_masks['W'] = MASK_STICK_UP;
+    press_masks['A'] = MASK_STICK_LEFT;
+    press_masks['S'] = MASK_STICK_DOWN;
+    press_masks['D'] = MASK_STICK_RIGHT;
     return;
 }
 
@@ -136,20 +141,70 @@ EXPORT void CALL InitiateControllers(p_void hMainWindow, CONTROL Controls[4])
     return;
 }
 
+static signed char clamp_stick(signed long magnitude)
+{
+    if (magnitude < -128)
+        return -128;
+    if (magnitude > +127)
+        return +127;
+    return ((signed char)magnitude);
+}
+
+static int stick_range(void)
+{
+#if 0
+    return 128; /* software limitation of the controller pad OS struct */
+#else
+    return clamp_stick(80); /* hardware limitation of the analog stick */
+#endif
+}
+
 static NOINLINE size_t filter_OS_key_code(size_t signal);
+
+static control_stick_activity already_pressed;
 
 EXPORT void CALL WM_KeyDown(unsigned int wParam, i32 lParam)
 {
     size_t message;
     u16 mask;
+    OS_CONT_PAD * pad;
 
+    pad = &controllers[0].cont_pad;
     message = wParam; /* normally the correct key code message */
     if (message == 0 && lParam != 0 && lParam <= 32767)
         message = (size_t)lParam; /* Mupen64 for Linux uses lParam instead. */
 
     message = filter_OS_key_code(message);
     mask = press_masks[message];
-    controllers[0].Value |=  (swapped_bytes ? swap16by8(mask) : mask);
+    switch (mask)
+    {
+    case MASK_STICK_UP:
+        if (already_pressed.up)
+            break;
+        pad->stick_x = clamp_stick(pad->stick_x + stick_range());
+        already_pressed.up = 1;
+        break;
+    case MASK_STICK_DOWN:
+        if (already_pressed.down)
+            break;
+        pad->stick_x = clamp_stick(pad->stick_x - stick_range());
+        already_pressed.down = 1;
+        break;
+    case MASK_STICK_RIGHT:
+        if (already_pressed.right)
+            break;
+        pad->stick_y = clamp_stick(pad->stick_y + stick_range());
+        already_pressed.right = 1;
+        break;
+    case MASK_STICK_LEFT:
+        if (already_pressed.left)
+            break;
+        pad->stick_y = clamp_stick(pad->stick_y - stick_range());
+        already_pressed.left = 1;
+        break;
+    default:
+        controllers[0].Value |=  swapped_bytes ? swap16by8(mask) : mask;
+    }
     return;
 }
 
@@ -157,14 +212,36 @@ EXPORT void CALL WM_KeyUp(unsigned int wParam, i32 lParam)
 {
     size_t message;
     u16 mask;
+    OS_CONT_PAD * pad;
 
+    pad = &controllers[0].cont_pad;
     message = wParam;
     if (message == 0 && lParam != 0 && lParam <= 32767)
         message = (size_t)lParam;
 
     message = filter_OS_key_code(message);
     mask = press_masks[message];
-    controllers[0].Value &= ~(swapped_bytes ? swap16by8(mask) : mask);
+    switch (mask)
+    {
+    case MASK_STICK_UP:
+        pad->stick_x = clamp_stick(pad->stick_x - stick_range());
+        already_pressed.up = 0;
+        break;
+    case MASK_STICK_DOWN:
+        pad->stick_x = clamp_stick(pad->stick_x + stick_range());
+        already_pressed.down = 0;
+        break;
+    case MASK_STICK_RIGHT:
+        pad->stick_y = clamp_stick(pad->stick_y - stick_range());
+        already_pressed.right = 0;
+        break;
+    case MASK_STICK_LEFT:
+        pad->stick_y = clamp_stick(pad->stick_y + stick_range());
+        already_pressed.left = 0;
+        break;
+    default:
+        controllers[0].Value &= swapped_bytes ? ~swap16by8(mask) : ~mask;
+    }
     return;
 }
 

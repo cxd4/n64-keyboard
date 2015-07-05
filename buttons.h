@@ -20,6 +20,23 @@
 #define MASK_B_BUTTON           (1u << 14)
 #define MASK_A_BUTTON           (1u << 15)
 
+#define MASK_STICK_RIGHT        (0x00C0u | MASK_R_JPAD | MASK_C_RIGHT)
+#define MASK_STICK_LEFT         (0x00C0u | MASK_L_JPAD | MASK_C_LEFT)
+#define MASK_STICK_DOWN         (0x00C0u | MASK_D_JPAD | MASK_C_DOWN)
+#define MASK_STICK_UP           (0x00C0u | MASK_U_JPAD | MASK_C_UP)
+
+/*
+ * We need this to keep track of which control stick directions are currently
+ * being used by the keyboard, as it is possible to press the control stick
+ * in both opposite directions at the same time when emulated via keyboard.
+ */
+typedef struct {
+    int up;
+    int down;
+    int right;
+    int left;
+} control_stick_activity;
+
 /*
  * The four directional arrow keys on the keyboard have no character
  * representation, at least under ASCII, so we will use the ASCII characters:
