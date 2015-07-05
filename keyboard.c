@@ -21,6 +21,7 @@ static const int swapped_bytes =
 ;
 
 pu16 press_masks;
+static control_stick_activity already_pressed;
 
 static INLINE u16 swap16by8(u16 word)
 {
@@ -103,8 +104,18 @@ EXPORT void CALL RomOpen(void)
 
 EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
 {
+    u16 buttons;
+
     assert(Control < MAX_CONTROLLERS);
     assert(Keys != NULL);
+
+    buttons = controllers[Control].Value & 0x0000FFFFul;
+    if ((buttons & CONTROL_STICK_EXCEPTION) == CONTROL_STICK_EXCEPTION)
+    { /* controller exception:  START while holding L + R */
+        controllers[Control].Value &= 0x0000FFFFul; /* analog stick reset */
+        Keys -> Value = buttons & ~MASK_START_BUTTON;
+        return;
+    }
     Keys -> Value = controllers[Control].Value;
     return;
 }
@@ -160,8 +171,6 @@ static int stick_range(void)
 }
 
 static NOINLINE size_t filter_OS_key_code(size_t signal);
-
-static control_stick_activity already_pressed;
 
 EXPORT void CALL WM_KeyDown(unsigned int wParam, i32 lParam)
 {
