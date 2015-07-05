@@ -22,7 +22,7 @@ static const int swapped_bytes =
 
 pu16 press_masks;
 
-static u16 swap16by8(u16 word)
+static INLINE u16 swap16by8(u16 word)
 {
     u16 swapped;
 
