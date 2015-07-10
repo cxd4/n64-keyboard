@@ -335,7 +335,7 @@ typedef void(*p_func)(void);
 #define NOINLINE    __declspec(noinline)
 #define ALIGNED     _declspec(align(16))
 #elif defined(__GNUC__)
-#define INLINE      inline
+#define INLINE   /* __attribute__((always_inline)) */
 #define NOINLINE    __attribute__((noinline))
 #define ALIGNED     __attribute__((aligned(16)))
 #else
