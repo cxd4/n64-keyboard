@@ -27,6 +27,13 @@ static INLINE u16 swap16by8(u16 word)
 {
     u16 swapped;
 
+/*
+ * MSVC 2005 (CL.EXE /O1 /Os):  ROL     ax, 8
+ * GCC 4.8.1 (gcc -Os -ansi) :  XCHG    al, ah
+ *
+ * Apparently even size-only optimizing compilers are capable of optimizing
+ * this function down to a single instruction, so there is no function here.
+ */
     swapped = 0x0000
       | ((word & 0x00FFu) << 8)
       | ((word & 0xFF00u) >> 8)
