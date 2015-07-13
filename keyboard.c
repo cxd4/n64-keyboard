@@ -45,17 +45,17 @@ EXPORT void CALL GetDllInfo(PLUGIN_INFO * PluginInfo)
 {
     char * name;
     u16 * system_version, * plugin_type;
-    int * memory_normal, * memory_swapped;
+    int/* * memory_normal,*/ * memory_swapped;
 
     system_version = &(PluginInfo -> Version);
     plugin_type    = &(PluginInfo -> Type);
     name           = &(PluginInfo -> Name[0]);
-    memory_normal  = &(PluginInfo -> Reserved1);
+ /* memory_normal  = &(PluginInfo -> Reserved1); // could be a bug in 1.4 */
     memory_swapped = &(PluginInfo -> Reserved2); /* bug in PJ 1.4; needs TRUE */
 
     *(system_version) = SPECS_VERSION;
     *(plugin_type)    = PLUGIN_TYPE_CONTROLLER;
-    *(memory_normal)  = 0;
+ /* *(memory_normal)  = 0; // reserved, shouldn't be set ideally */
     *(memory_swapped) = swapped_bytes;
 
     strcpy(name, "System Keyboard");
