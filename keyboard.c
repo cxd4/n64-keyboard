@@ -179,7 +179,7 @@ static int stick_range(void)
 
 static NOINLINE size_t filter_OS_key_code(size_t signal);
 
-EXPORT void CALL WM_KeyDown(unsigned int wParam, i32 lParam)
+EXPORT void CALL WM_KeyDown(size_t wParam, ssize_t lParam)
 {
     size_t message;
     u16 mask;
@@ -187,7 +187,7 @@ EXPORT void CALL WM_KeyDown(unsigned int wParam, i32 lParam)
 
     pad = &controllers[0].cont_pad;
     message = wParam; /* normally the correct key code message */
-    if (message == 0 && lParam != 0 && lParam <= 32767)
+    if (message == 0 && lParam > 0)
         message = (size_t)lParam; /* Mupen64 for Linux uses lParam instead. */
 
     message = filter_OS_key_code(message);
@@ -224,7 +224,7 @@ EXPORT void CALL WM_KeyDown(unsigned int wParam, i32 lParam)
     return;
 }
 
-EXPORT void CALL WM_KeyUp(unsigned int wParam, i32 lParam)
+EXPORT void CALL WM_KeyUp(size_t wParam, ssize_t lParam)
 {
     size_t message;
     u16 mask;
@@ -232,7 +232,7 @@ EXPORT void CALL WM_KeyUp(unsigned int wParam, i32 lParam)
 
     pad = &controllers[0].cont_pad;
     message = wParam;
-    if (message == 0 && lParam != 0 && lParam <= 32767)
+    if (message == 0 && lParam > 0)
         message = (size_t)lParam;
 
     message = filter_OS_key_code(message);

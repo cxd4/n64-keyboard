@@ -13,14 +13,10 @@
  * what is guaranteed by simple preprocessor logic and the C89 standard, so
  * the deduction of RCP hardware types will have the following priority:
  *     1.  compiler implementation of the <stdint.h> extension
- *     2.  64-bit ABI detection by the preprocessor
+ *     2.  64-bit ABI detection by the preprocessor with help from <limits.h>
  *     3.  preprocessor derivation of literal integer interpretation
  *     4.  the presumption of C89 conformance for 8-, 16-, and 32-bit types
  *         and the presumption of `long long` support for 64-bit types
- *
- * In situations where the compiler's implementation chooses to control these
- * arbitrary sizes on its own or to exchange portability with C99 compliance,
- * the standard types (either built-in or external <stdint.h>) will be preferred.
  */
 
 /*
@@ -29,14 +25,20 @@
  * especially in the event that one decides that type requirements should be
  * mandated by the user and not permanently merged into the C specifications.
  *
- * Compilers always have had, always should have, and always will have the
- * right to choose whether it is the programmer's job to establish the
- * arbitrary sizes they prefer to have or whether the C language should
- * be complicated enough to specify additional built-in criteria such as
- * this, such that it should be able to depend on a system header for it.
+ * Custom, collision-free type definitions are also useful in that they can
+ * be tested for cross-ABI portability by changing a custom type like `u32`
+ * from `unsigned long` to `unsigned short` or vice-versa.
  */
 #ifndef _MY_TYPES_H_
 #define _MY_TYPES_H_
+
+/*
+ * This is the only method we really need to care about for defining types.
+ *
+ * All concerns of absolute plausibility are addressed with minimum-width
+ * types; we do not require fixed-width types or any C99 dependency.
+ */
+#include <limits.h>
 
 /*
  * Until proven otherwise, there are no standard integer types.
@@ -53,25 +55,8 @@
  * "better early than late" or "better early than never at all") rather than
  * a fully portable resource available or even possible all of the time.
  */
-#if defined(__STDC_VERSION__) && (__STDC_VERSION__ < 199901L)
-/*
- * Something which strictly emphasizes pre-C99 standard compliance likely
- * does not have any <stdint.h> that we could include (nor built-in types).
- */
-#elif defined(_MSC_VER) && (_MSC_VER < 1600)
-/*
- * In some better, older versions of MSVC, there often was no <stdint.h>.
- * We can still use the built-in MSVC types to create the <stdint.h> types.
- */
-#else
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
 #include <stdint.h>
-#endif
-
-#ifndef FALSE
-#define FALSE       0
-#endif
-#ifndef TRUE
-#define TRUE        1
 #endif
 
 /*
@@ -177,10 +162,13 @@ typedef s8                      i8;
 typedef signed __int8           s8;
 typedef unsigned __int8         u8;
 typedef __int8                  i8;
-#else
+
+#elif (SCHAR_MIN < -127 && SCHAR_MAX >= +127)
 typedef signed char             s8;
 typedef unsigned char           u8;
 typedef char                    i8;
+#else
+#error Non-ANSI-conformant `char` size.
 #endif
 
 #if defined(HAVE_INT16_EXACT)
@@ -195,6 +183,10 @@ typedef uint_least16_t          u16;
 #elif defined(MICROSOFT_ABI)
 typedef signed __int16          s16;
 typedef unsigned __int16        u16;
+
+#elif (SCHAR_MIN < -32767 && SCHAR_MAX >= +32767)
+typedef signed char             s16;
+typedef unsigned char           u16;
 #else
 typedef signed short            s16;
 typedef unsigned short          u16;
@@ -212,12 +204,19 @@ typedef uint_least32_t          u32;
 #elif defined(MICROSOFT_ABI)
 typedef signed __int32          s32;
 typedef unsigned __int32        u32;
-#elif !defined(__LP64__) && (0xFFFFFFFFL < 0xFFFFFFFFUL)
-typedef signed long             s32;
-typedef unsigned long           u32;
-#else
+
+#elif (SCHAR_MIN < -2147483647L && SCHAR_MAX >= +2147483647L)
+typedef signed char             s32;
+typedef unsigned char           u32;
+#elif (SHRT_MIN < -2147483647L && SHRT_MAX >= +2147483647L)
+typedef signed short            s32;
+typedef unsigned short          u32;
+#elif (INT_MIN < -2147483647L && INT_MAX >= +2147483647L)
 typedef signed int              s32;
 typedef unsigned int            u32;
+#else
+typedef signed long             s32;
+typedef unsigned long           u32;
 #endif
 
 #if defined(HAVE_INT64_EXACT)
@@ -232,7 +231,11 @@ typedef uint_least64_t          u64;
 #elif defined(MICROSOFT_ABI)
 typedef signed __int64          s64;
 typedef unsigned __int64        u64;
+
 #elif defined(__LP64__) && (0x00000000FFFFFFFFUL < ~0UL)
+typedef signed long             s64;
+typedef unsigned long           u64;
+#elif (LONG_MIN < -9223372036854775807L && LONG_MAX >= +9223372036854775807L)
 typedef signed long             s64;
 typedef unsigned long           u64;
 #else
@@ -276,14 +279,40 @@ typedef u64     uint64_t;
 #endif
 
 /*
- * Single- and double-precision floating-point data types have a little less
- * room for maintenance across different CPU processors, as the C standard
- * just provides `float' and `[long] double'.  However, if we are going to
- * need 32- and 64-bit floating-point precision (which MIPS emulation does
- * require), then it could be nice to have these names just to be consistent.
+ * MIPS-native types are `float' for f32, `double' for f64.
+ * These type requirements are based on the MIPS manuals on the FPU.
  */
+#include <float.h>
+
+#if (FLT_MANT_DIG >= 24) && (FLT_MAX_EXP > 127)
 typedef float                   f32;
+#elif (DBL_MANT_DIG >= 24) && (DBL_MAX_EXP > 127)
+typedef double                  f32;
+#elif (LDBL_MANT_DIG >= 24) && (LDBL_MAX_EXP > 127)
+typedef long double             f32;
+#else
+typedef struct {
+#if (UINT_MAX >= (0x00000001UL << 23) - 1UL)
+    unsigned f:  23; /* mantissa fraction */
+#else
+    unsigned long f;
+#endif
+    unsigned e:   8; /* biased exponent, from -126 to +127 for generic values */
+    unsigned s:   1; /* mantissa sign bit */
+} f32;
+#endif
+
+#if (DBL_MANT_DIG >= 53) && (DBL_MAX_EXP > 1023)
 typedef double                  f64;
+#elif (LDBL_MANT_DIG >= 53) && (LDBL_MAX_EXP > 1023)
+typedef long double             f64;
+#else
+typedef struct {
+    uint64_t f/*:  52*/;
+    unsigned e:  11;
+    unsigned s:   1;
+} f64;
+#endif
 
 /*
  * Pointer types, serving as the memory reference address to the actual type.
@@ -327,6 +356,15 @@ typedef void(*p_func)(void);
 #endif
 
 /*
+ * Commonly, Ultra64 will refer to these common symbols.
+ * They seem to be fairly widely used outside of just <windows.h>.
+ */
+#if !defined(TRUE) && !defined(FALSE)
+#define FALSE       0
+#define TRUE        1
+#endif
+
+/*
  * Optimizing compilers aren't necessarily perfect compilers, but they do
  * have that extra chance of supporting explicit [anti-]inline instructions.
  */
@@ -335,7 +373,7 @@ typedef void(*p_func)(void);
 #define NOINLINE    __declspec(noinline)
 #define ALIGNED     _declspec(align(16))
 #elif defined(__GNUC__)
-#define INLINE   /* __attribute__((always_inline)) */
+#define INLINE      inline
 #define NOINLINE    __attribute__((noinline))
 #define ALIGNED     __attribute__((aligned(16)))
 #else
@@ -372,9 +410,9 @@ typedef union {
     u8 B[8];
     s8 SB[8];
 
-    i16 F[4];
-    u16 UF[4];
-    s16 SF[4];
+    i16 Q[4];
+    u16 UQ[4];
+    s16 SQ[4];
 
     i32 H[2];
     u32 UH[2];
@@ -390,17 +428,17 @@ typedef union {
  * EEP!  Currently concentrates mostly on 32-bit endianness.
  */
 #ifndef ENDIAN_M
-#if defined(__BYTE_ORDER) && (__BYTE_ORDER != __LITTLE_ENDIAN)
-#define ENDIAN_M    ( 0)
+#if defined(__BIG_ENDIAN__)
+#define ENDIAN_M    ( 0U)
 #else
-#define ENDIAN_M    (~0)
+#define ENDIAN_M    (~0U)
 #endif
 #endif
 
-#define ENDIAN_SWAP_BYTE    (ENDIAN_M & 0x7 & 3)
-#define ENDIAN_SWAP_HALF    (ENDIAN_M & 0x6 & 2)
-#define ENDIAN_SWAP_BIMI    (ENDIAN_M & 0x5 & 1)
-#define ENDIAN_SWAP_WORD    (ENDIAN_M & 0x4 & 0)
+#define ENDIAN_SWAP_BYTE    (ENDIAN_M & 7U & 3U)
+#define ENDIAN_SWAP_HALF    (ENDIAN_M & 6U & 2U)
+#define ENDIAN_SWAP_BIMI    (ENDIAN_M & 5U & 1U)
+#define ENDIAN_SWAP_WORD    (ENDIAN_M & 4U & 0U)
 
 #define BES(address)    ((address) ^ ENDIAN_SWAP_BYTE)
 #define HES(address)    ((address) ^ ENDIAN_SWAP_HALF)
@@ -412,30 +450,29 @@ typedef union {
  * Possibly implement other machine types in future versions of this header.
  */
 typedef struct {
-    unsigned opcode:  6;
-    unsigned rs:  5;
-    unsigned rt:  5;
-    unsigned rd:  5;
-    unsigned sa:  5;
-    unsigned function:  6;
+    unsigned opcode   :   6;
+    unsigned rs       :   5;
+    unsigned rt       :   5;
+    unsigned rd       :   5;
+    unsigned sa       :   5;
+    unsigned function :   6;
 } MIPS_type_R;
 typedef struct {
-    unsigned opcode:  6;
-    unsigned rs:  5;
-    unsigned rt:  5;
-    unsigned imm:  16;
+    unsigned opcode   :   6;
+    unsigned rs       :   5;
+    unsigned rt       :   5;
+    unsigned immediate:  16;
 } MIPS_type_I;
 
-/*
- * Maybe worth including, maybe not.
- * It's sketchy since bit-fields pertain to `int' type, of which the size is
- * not necessarily going to be even 4 bytes.  On C compilers for MIPS itself,
- * almost certainly, but is this really important to have?
- */
-#if 0
+#if (UINT_MAX >= (0x00000001UL << 26) - 1UL)
 typedef struct {
-    unsigned opcode:  6;
-    unsigned target:  26;
+    unsigned opcode   :   6;
+    unsigned target   :  26;
+} MIPS_type_J;
+#else
+typedef struct {
+    unsigned opcode   :   6;
+    unsigned long target; /* If `int' can't store 26 bits, `long' can. */
 } MIPS_type_J;
 #endif
 
