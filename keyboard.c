@@ -12,14 +12,6 @@
 #define MAX_CONTROLLERS         4
 static BUTTONS controllers[MAX_CONTROLLERS];
 
-static const int swapped_bytes =
-#if (ENDIAN_M != 0)
-    1
-#else
-    0
-#endif
-;
-
 pu16 press_masks;
 static control_stick_activity already_pressed;
 
@@ -28,11 +20,8 @@ static INLINE u16 swap16by8(u16 word)
     u16 swapped;
 
 /*
- * MSVC 2005 (CL.EXE /O1 /Os):  ROL     ax, 8
- * GCC 4.8.1 (gcc -Os -ansi) :  XCHG    al, ah
- *
- * Apparently even size-only optimizing compilers are capable of optimizing
- * this function down to a single instruction, so there is no function here.
+ * MSVC 2005 (CL.EXE /O1 /Os):  ROL     ax, 8 # no function call/ret
+ * GCC 4.8.1 (gcc -Os -ansi) :  XCHG    al, ah # no function call/ret
  */
     swapped = 0x0000
       | ((word & 0x00FFu) << 8)
@@ -54,7 +43,7 @@ EXPORT void CALL GetDllInfo(PLUGIN_INFO * PluginInfo)
     *(system_version) = SPECS_VERSION;
     *(plugin_type)    = PLUGIN_TYPE_CONTROLLER;
  /* *(memory_normal)  = 0; // reserved, shouldn't be set ideally */
-    *(memory_swapped) = swapped_bytes;
+    *(memory_swapped) = ENDIAN_M;
 
     strcpy(&(PluginInfo -> Name[0]), "System Keyboard");
     return;
@@ -217,7 +206,10 @@ EXPORT void CALL WM_KeyDown(size_t wParam, ssize_t lParam)
         already_pressed.left = 1;
         break;
     default:
-        controllers[0].Value |=  swapped_bytes ? swap16by8(mask) : mask;
+#if (ENDIAN_M != 0)
+        mask = swap16by8(mask); /* PluginInfo memory adjustment */
+#endif
+        controllers[0].Value |=  mask;
     }
     return;
 }
@@ -254,7 +246,10 @@ EXPORT void CALL WM_KeyUp(size_t wParam, ssize_t lParam)
         already_pressed.left = 0;
         break;
     default:
-        controllers[0].Value &= swapped_bytes ? ~swap16by8(mask) : ~mask;
+#if (ENDIAN_M != 0)
+        mask = swap16by8(mask); /* PluginInfo memory adjustment */
+#endif
+        controllers[0].Value &= ~mask;
     }
     return;
 }
