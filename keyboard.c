@@ -43,13 +43,11 @@ static INLINE u16 swap16by8(u16 word)
 
 EXPORT void CALL GetDllInfo(PLUGIN_INFO * PluginInfo)
 {
-    char * name;
     u16 * system_version, * plugin_type;
     int/* * memory_normal,*/ * memory_swapped;
 
     system_version = &(PluginInfo -> Version);
     plugin_type    = &(PluginInfo -> Type);
-    name           = &(PluginInfo -> Name[0]);
  /* memory_normal  = &(PluginInfo -> Reserved1); // could be a bug in 1.4 */
     memory_swapped = &(PluginInfo -> Reserved2); /* bug in PJ 1.4; needs TRUE */
 
@@ -58,7 +56,7 @@ EXPORT void CALL GetDllInfo(PLUGIN_INFO * PluginInfo)
  /* *(memory_normal)  = 0; // reserved, shouldn't be set ideally */
     *(memory_swapped) = swapped_bytes;
 
-    strcpy(name, "System Keyboard");
+    strcpy(&(PluginInfo -> Name[0]), "System Keyboard");
     return;
 }
 
