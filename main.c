@@ -81,7 +81,8 @@ EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
     assert(Keys != NULL);
     if ((buttons & control_stick_exception) == control_stick_exception) {
         controllers[Control].Value &= 0x0000FFFFul; /* analog stick reset */
-        Keys -> Value = buttons & ~MASK_START_BUTTON;
+        buttons ^= ENDIAN_M ? swap16by8(MASK_START_BUTTON) : MASK_START_BUTTON;
+        Keys -> Value = buttons;
         return;
     }
     Keys -> Value = controllers[Control].Value;
