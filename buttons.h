@@ -35,6 +35,12 @@ typedef struct {
     int down;
     int right;
     int left;
+
+/*
+ * real N64 system behavior (documented in the product hazards manual):
+ * Pressing START+L+R resets current stick state as the new neutral position.
+ */
+    int hazard_mode;
 } control_stick_activity;
 
 /*
