@@ -5,7 +5,6 @@ obj="$src/obj"
 
 FLAGS_ANSI="\
     -Os \
-    -ansi \
     -pedantic \
     -Wall \
     -DPLUGIN_API_VERSION=0x0100"
