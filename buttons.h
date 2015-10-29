@@ -65,12 +65,16 @@ typedef struct {
 #define KEYBOARD_RIGHT          (DIRECTIONAL_BASE + 2)
 #define KEYBOARD_DOWN           (DIRECTIONAL_BASE + 3)
 
-#include "contr.h"
+#include <stddef.h>
+#include "my_types.h"
 
 /*
  * assuming an ASCII implementation, should be 128 * 2 bytes per u16
  * Probably this is more maintainable and readable if allocated using malloc.
  */
 extern pu16 press_masks;
+
+extern void map_keys(void);
+extern NOINLINE size_t filter_OS_key_code(size_t signal);
 
 #endif

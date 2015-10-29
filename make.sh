@@ -5,7 +5,6 @@ obj="$src/obj"
 
 FLAGS_ANSI="\
     -Os \
-    -std=c89 \
     -ansi \
     -pedantic \
     -Wall \
@@ -14,10 +13,12 @@ FLAGS_ANSI="\
 C_FLAGS=$FLAGS_ANSI
 
 echo Compiling C source code...
-cc -o $obj/keyboard.s $src/keyboard.c -S $C_FLAGS
+cc -o $obj/main.s               $src/main.c     -S $C_FLAGS
+cc -o $obj/keyboard.s           $src/keyboard.c -S $C_FLAGS
 
 echo Assembling compiled sources...
-as -o $obj/keyboard.o $obj/keyboard.s --statistics
+as -o $obj/main.o               $obj/main.s     --statistics
+as -o $obj/keyboard.o           $obj/keyboard.s --statistics
 
 echo Linking assembled object files...
-ld -o $obj/keyboard.so $obj/keyboard.o -lc -s --shared
+ld -o $obj/keyboard.so $obj/keyboard.o $obj/main.o -lc -s --shared

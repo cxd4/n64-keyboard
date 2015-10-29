@@ -12,7 +12,7 @@ set libs=/LIBPATH:"%DDK%\lib\crt\%target%"
 set C_FLAGS=/c /Wall /O1 /Os /Ob1 /Oi /Oy /GS- /MD /TC /Fa
 set LINK_FLAGS=%libs% /DLL /NOENTRY /FILEALIGN:512 /MERGE:.rdata=.text
 
-%MSVC%\cl.exe %CD%\keyboard.c %incl% %C_FLAGS% /link %LINK_FLAGS%
-%MSVC%\link.exe %LINK_FLAGS% /SUBSYSTEM:CONSOLE,5.2 keyboard.obj
+%MSVC%\cl.exe %CD%\keyboard.c %CD%\main.c %incl% %C_FLAGS% /link %LINK_FLAGS%
+%MSVC%\link.exe %LINK_FLAGS% /SUBSYSTEM:CONSOLE,5.2 keyboard.obj main.obj
 
 pause
