@@ -20,12 +20,6 @@
 #define MASK_B_BUTTON           (1u << 14)
 #define MASK_A_BUTTON           (1u << 15)
 
-/*
- * real N64 system behavior (documented in the product hazards manual):
- * Pressing START+L+R resets current stick state as the new neutral position.
- */
-#define CONTROL_STICK_EXCEPTION (MASK_START_BUTTON | MASK_L_TRIG | MASK_R_TRIG)
-
 #define MASK_STICK_RIGHT        (0xF0F0u | MASK_R_JPAD | MASK_C_RIGHT)
 #define MASK_STICK_LEFT         (0xF0F0u | MASK_L_JPAD | MASK_C_LEFT)
 #define MASK_STICK_DOWN         (0xF0F0u | MASK_D_JPAD | MASK_C_DOWN)

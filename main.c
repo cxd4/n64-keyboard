@@ -68,13 +68,18 @@ EXPORT void CALL RomOpen(void)
 EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
 {
     u16 buttons;
+    const u16 control_stick_exception = /* real N64 control stick hazard */
+#if (ENDIAN_M == 0)
+        MASK_START_BUTTON | MASK_L_TRIG | MASK_R_TRIG;
+#else
+        swap16by8(MASK_START_BUTTON | MASK_L_TRIG | MASK_R_TRIG);
+#endif
 
     assert(Control < MAX_CONTROLLERS);
     buttons = controllers[Control].Value & 0x0000FFFFul;
 
     assert(Keys != NULL);
-    if ((buttons & CONTROL_STICK_EXCEPTION) == CONTROL_STICK_EXCEPTION)
-    { /* controller exception:  START while holding L + R */
+    if ((buttons & control_stick_exception) == control_stick_exception) {
         controllers[Control].Value &= 0x0000FFFFul; /* analog stick reset */
         Keys -> Value = buttons & ~MASK_START_BUTTON;
         return;
