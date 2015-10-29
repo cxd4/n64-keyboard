@@ -20,4 +20,4 @@ as -o $obj/main.o               $obj/main.s     --statistics
 as -o $obj/keyboard.o           $obj/keyboard.s --statistics
 
 echo Linking assembled object files...
-ld -o $obj/keyboard.so $obj/keyboard.o $obj/main.o -lc -s --shared
+gcc -o $obj/keyboard.so $obj/keyboard.o $obj/main.o -s --shared
