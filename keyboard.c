@@ -101,9 +101,9 @@ EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
     u16 buttons;
 
     assert(Control < MAX_CONTROLLERS);
-    assert(Keys != NULL);
-
     buttons = controllers[Control].Value & 0x0000FFFFul;
+
+    assert(Keys != NULL);
     if ((buttons & CONTROL_STICK_EXCEPTION) == CONTROL_STICK_EXCEPTION)
     { /* controller exception:  START while holding L + R */
         controllers[Control].Value &= 0x0000FFFFul; /* analog stick reset */
