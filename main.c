@@ -134,11 +134,16 @@ static signed char clamp_stick(signed long magnitude)
 
 static int stick_range(void)
 {
-#if 0
-    return 128; /* software limitation of the controller pad OS struct */
-#else
-    return clamp_stick(80); /* hardware limitation of the analog stick */
-#endif
+    static const int magnitudes[] = {
+        128, /* software limitation:  (int8_t)(stick_mask & 0xFF) >= -128 */
+         80, /* hardware limitation:  Strongest real N64 stick presses do 80. */
+         64, /* a little slow (Hold Ctrl.) */
+         32, /* very slow (Hold Ctrl+Alt.) */
+    };
+    const int shift_amount = (ENDIAN_M ? 6 + 8 : 6 + 0);
+    const reserved_flags = (controllers[0].Value >> shift_amount) & 3;
+
+    return (magnitudes[reserved_flags]);
 }
 
 EXPORT void CALL WM_KeyDown(size_t wParam, ssize_t lParam)

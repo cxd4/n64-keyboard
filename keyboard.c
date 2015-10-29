@@ -21,7 +21,8 @@ void map_keys(void)
     press_masks['I'] = MASK_R_TRIG;
     press_masks['U'] = MASK_L_TRIG;
 
- /* to do:  possibly implement the 2 reserved button flags as accelerators? */
+    press_masks[KEYBOARD_SHIFT]   = MASK_reserved0;
+    press_masks[KEYBOARD_CONTROL] = MASK_reserved1;
 
     press_masks[KEYBOARD_RIGHT] = MASK_R_JPAD;
     press_masks[KEYBOARD_LEFT ] = MASK_L_JPAD;
@@ -43,19 +44,23 @@ void map_keys(void)
 NOINLINE size_t filter_OS_key_code(size_t signal)
 {
 #if defined(_WIN32) || defined(_WIN64)
-    switch (signal)
-    {
+    switch (signal) {
     case 0x25:  return KEYBOARD_LEFT; /* from VK_LEFT */
     case 0x26:  return KEYBOARD_UP; /* from VK_UP */
     case 0x27:  return KEYBOARD_RIGHT; /* from VK_RIGHT */
     case 0x28:  return KEYBOARD_DOWN; /* from VK_DOWN */
 
+    case 0x10:  return KEYBOARD_SHIFT; /* from VK_SHIFT */
+    case 0x11:  return KEYBOARD_CONTROL; /* from VK_CONTROL */
+
     case 0xBA:  return ';'; /* from VK_OEM_1 (`;:`) */
     case 0xDE:  return '\''; /* from VK_OEM_7 (`':`) */
     }
 #else
-    switch (signal & 0xFFFF) /* SDL 2.0 might mask in bit 30. */
-    {
+    switch (signal & 0xFFFF) { /* SDL 2.0 might mask in bit 30. */
+    case 0x01:  case 0x02:  return KEYBOARD_SHIFT;
+    case 0x40:  case 0x80:  return KEYBOARD_CONTROL;
+
     case 273: /* SDLK_UP in SDL 1.x */
     case 82: /* SDLK_UP & SDL_SCANCODE_UP in SDL 2 */
         return KEYBOARD_UP;

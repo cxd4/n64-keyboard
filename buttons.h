@@ -65,6 +65,9 @@ typedef struct {
 #define KEYBOARD_RIGHT          (DIRECTIONAL_BASE + 2)
 #define KEYBOARD_DOWN           (DIRECTIONAL_BASE + 3)
 
+#define KEYBOARD_SHIFT          28
+#define KEYBOARD_CONTROL        29
+
 #include <stddef.h>
 #include "my_types.h"
 
