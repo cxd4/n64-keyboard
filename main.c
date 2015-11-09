@@ -83,11 +83,11 @@ EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
         controllers[Control].Value &= 0x0000FFFFul; /* analog stick reset */
         buttons ^= ENDIAN_M ? swap16by8(MASK_START_BUTTON) : MASK_START_BUTTON;
         Keys -> Value = buttons;
-        already_pressed.hazard_mode = 1;
+        already_pressed.hazard_recovery_mode = 1;
         return;
     }
     Keys -> Value = controllers[Control].Value;
-    already_pressed.hazard_mode = 0;
+    already_pressed.hazard_recovery_mode = 0;
     return;
 }
 
