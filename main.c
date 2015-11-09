@@ -2,8 +2,6 @@
 #include <malloc.h>
 #include <string.h>
 
-/* to do:  have working controller #1.1 implementation */
-#define SPECS_VERSION           0x0100
 #include "contr.h"
 #include "buttons.h"
 
@@ -94,9 +92,14 @@ EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
 #if (SPECS_VERSION > 0x0100)
 EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
 #else
-EXPORT void CALL InitiateControllers(p_void hMainWindow, CONTROL Controls[4])
+EXPORT void CALL InitiateControllers(void * hMainWindow, CONTROL Controls[4])
 #endif
 {
+#if (SPECS_VERSION == 0x0101)
+    CONTROL * const Controls = ControlInfo.Controls; /* typo in #1.1 spec */
+#elif (SPECS_VERSION >= 0x0102)
+    CONTROL * const Controls = ControlInfo -> Controls;
+#endif
     register int i;
 
     for (i = 0; i < MAX_CONTROLLERS; i++)
