@@ -28,24 +28,20 @@
 #undef ssize_t
 /* needed in case of APIs (such as <windows.h>) making this type a macro */
 
-#ifdef __GNUC__
-#include <sys/types.h>
-/* POSIX standard location of `ssize_t' definition */
-#endif
-
-#ifndef SSIZE_MAX
 #if defined(_WIN64)
 typedef int64_t                 ssize_t;
-#else
+#elif defined(_WIN32)
 typedef signed long             ssize_t;
-#endif
+#else
+#include <sys/types.h>
+/* POSIX standard location of `ssize_t' definition */
 #endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-#define PLUGIN_TYPE_CONTROLLER	    4
+#define PLUGIN_TYPE_CONTROLLER      4
 
 #ifndef SPECS_VERSION
 #define SPECS_VERSION           0x0101
