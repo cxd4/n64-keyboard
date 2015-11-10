@@ -66,16 +66,12 @@ NOINLINE size_t filter_OS_key_code(size_t signal)
     case 0x40:  case 0x80:  return KEYBOARD_CONTROL;
 
     case 273: /* SDLK_UP in SDL 1.x */
-    case 82: /* SDLK_UP & SDL_SCANCODE_UP in SDL 2 */
         return KEYBOARD_UP;
     case 274: /* SDLK_DOWN in SDL 1.x */
-    case 81: /* SDLK_DOWN & SDL_SCANCODE_DOWN in SDL 2 */
         return KEYBOARD_DOWN;
     case 275: /* SDLK_RIGHT in SDL 1.x */
-    case 79: /* SDLK_RIGHT & SDL_SCANCODE_RIGHT in SDL 2 */
         return KEYBOARD_RIGHT;
     case 276: /* SDLK_LEFT in SDL 1.x */
-    case 80: /* SDLK_LEFT & SDL_SCANCODE_LEFT in SDL 2 */
         return KEYBOARD_LEFT;
     }
 #endif
