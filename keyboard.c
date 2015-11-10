@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <malloc.h>
 
+#include <ctype.h>
 #include <string.h>
 #include "buttons.h"
 
@@ -57,6 +58,9 @@ NOINLINE size_t filter_OS_key_code(size_t signal)
     case 0xDE:  return '\''; /* from VK_OEM_7 (`':`) */
     }
 #else
+    if (signal >= 'a' && signal <= 'z')
+        signal  = toupper(signal); /* SDL keys register lowercase letters. */
+
     switch (signal & 0xFFFF) { /* SDL 2.0 might mask in bit 30. */
     case 0x01:  case 0x02:  return KEYBOARD_SHIFT;
     case 0x40:  case 0x80:  return KEYBOARD_CONTROL;
