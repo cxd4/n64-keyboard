@@ -11,7 +11,7 @@ static BUTTONS controllers[MAX_CONTROLLERS];
 
 static control_stick_activity already_pressed;
 
-static INLINE u16 swap16by8(u16 word)
+static u16 swap16by8(u16 word)
 {
     u16 swapped;
 
