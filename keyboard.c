@@ -62,8 +62,12 @@ NOINLINE size_t filter_OS_key_code(size_t signal)
         signal  = toupper(signal); /* SDL keys register lowercase letters. */
 
     switch (signal & 0xFFFF) { /* SDL 2.0 might mask in bit 30. */
-    case 0x01:  case 0x02:  return KEYBOARD_SHIFT;
-    case 0x40:  case 0x80:  return KEYBOARD_CONTROL;
+    case 0x01:  case 0x02:
+    case 0x012F:  case 0x0130: /* SDL 1.2 right and left Shift */
+        return KEYBOARD_SHIFT;
+    case 0x40:  case 0x80:
+    case 0x0131:  case 0x0132: /* SDL 1.2 right and left Ctrl */
+        return KEYBOARD_CONTROL;
 
     case 273: /* SDLK_UP in SDL 1.x */
         return KEYBOARD_UP;
