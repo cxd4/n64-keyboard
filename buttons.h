@@ -25,6 +25,9 @@
 #define MASK_STICK_DOWN         (0xF0F0u | MASK_D_JPAD | MASK_C_DOWN)
 #define MASK_STICK_UP           (0xF0F0u | MASK_U_JPAD | MASK_C_UP)
 
+#include <stddef.h>
+#include "my_types.h"
+
 /*
  * We need this to keep track of which control stick directions are currently
  * being used by the keyboard, as it is possible to press the control stick
@@ -41,6 +44,12 @@ typedef struct {
  * Pressing START+L+R resets current stick state as the new neutral position.
  */
     int hazard_recovery_mode;
+
+/*
+ * turbo mode for buttons, as seen on those MadCatz controllers
+ */
+    u16 turbo_mask;
+    u16 last_mask;
 } control_stick_activity;
 
 /*
@@ -67,9 +76,6 @@ typedef struct {
 
 #define KEYBOARD_SHIFT          28
 #define KEYBOARD_CONTROL        29
-
-#include <stddef.h>
-#include "my_types.h"
 
 /*
  * assuming an ASCII implementation, should be 128 * 2 bytes per u16

@@ -74,6 +74,7 @@ EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
 #endif
 
     assert(Control < MAX_CONTROLLERS);
+    controllers[Control].Value ^= already_pressed.turbo_mask;
     buttons = controllers[Control].Value & 0x0000FFFFul;
 
     assert(Keys != NULL);
@@ -191,6 +192,9 @@ EXPORT void CALL WM_KeyDown(size_t wParam, ssize_t lParam)
 #if (ENDIAN_M != 0)
         mask = swap16by8(mask); /* PluginInfo memory adjustment */
 #endif
+        already_pressed.last_mask |= mask;
+        if (message == 'T')
+            already_pressed.turbo_mask |= already_pressed.last_mask;
         controllers[0].Value |=  mask;
     }
     return;
@@ -231,6 +235,9 @@ EXPORT void CALL WM_KeyUp(size_t wParam, ssize_t lParam)
 #if (ENDIAN_M != 0)
         mask = swap16by8(mask); /* PluginInfo memory adjustment */
 #endif
+        already_pressed.last_mask &= ~mask;
+        if (message == 'T')
+            already_pressed.turbo_mask &= ~already_pressed.last_mask;
         controllers[0].Value &= ~mask;
     }
     return;
