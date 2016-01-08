@@ -50,6 +50,12 @@ typedef struct {
  */
     u16 turbo_mask;
     u16 last_mask;
+
+/*
+ * rapid automatic control stick rotation to help with some annoying games
+ */
+    int auto_spin_loop;
+    int auto_spin_stage;
 } control_stick_activity;
 
 /*

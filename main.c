@@ -4,10 +4,11 @@
 
 #include "contr.h"
 #include "buttons.h"
+#include "analog.h"
 
 /* to do:  Wasn't there some old design when this could be 8? */
 #define MAX_CONTROLLERS         4
-static BUTTONS controllers[MAX_CONTROLLERS];
+BUTTONS controllers[MAX_CONTROLLERS];
 
 static control_stick_activity already_pressed;
 
@@ -87,6 +88,20 @@ EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
     }
     Keys -> Value = controllers[Control].Value;
     already_pressed.hazard_recovery_mode = 0;
+
+    if (already_pressed.auto_spin_loop) {
+        signed char x, y;
+
+        x = (Keys -> cont_pad.stick_y);
+        y = (Keys -> cont_pad.stick_x);
+        stick_rotate(
+            &x, &y, already_pressed.auto_spin_stage * ROTATE_ARC_PRECISION
+        );
+        (Keys -> cont_pad.stick_y) = x;
+        (Keys -> cont_pad.stick_x) = y;
+        already_pressed.auto_spin_stage =
+            (already_pressed.auto_spin_stage + 1) % REVOLUTION_PRECISION;
+    }
     return;
 }
 
@@ -125,28 +140,6 @@ EXPORT void CALL InitiateControllers(void * hMainWindow, CONTROL Controls[4])
     hMainWindow = hMainWindow; /* unused */
 #endif
     return;
-}
-
-static signed char clamp_stick(signed long magnitude)
-{
-    if (magnitude < -128)
-        return -128;
-    if (magnitude > +127)
-        return +127;
-    return ((signed char)magnitude);
-}
-
-static int stick_range(void)
-{
-    static const int magnitudes[] = {
-         80, /* hardware limitation:  Strongest real N64 stick presses do 80. */
-        128, /* software limitation (Hold Shift.):  stick_mask & 0xFF >= -128 */
-         64, /* a little slow (Hold Ctrl.) */
-         32, /* very slow (Hold Ctrl+Shift.) */
-    };
-    const int shift_amount = (ENDIAN_M ? 6 + 8 : 6 + 0);
-
-    return magnitudes[(controllers[0].Value >> shift_amount) & 3];
 }
 
 EXPORT void CALL WM_KeyDown(size_t wParam, ssize_t lParam)
@@ -193,6 +186,10 @@ EXPORT void CALL WM_KeyDown(size_t wParam, ssize_t lParam)
         mask = swap16by8(mask); /* PluginInfo memory adjustment */
 #endif
         already_pressed.last_mask |= mask;
+        if (message == 'R') {
+            already_pressed.auto_spin_loop = TRUE;
+            already_pressed.auto_spin_stage = 0;
+        }
         if (message == 'T')
             already_pressed.turbo_mask |= already_pressed.last_mask;
         controllers[0].Value |=  mask;
@@ -236,6 +233,8 @@ EXPORT void CALL WM_KeyUp(size_t wParam, ssize_t lParam)
         mask = swap16by8(mask); /* PluginInfo memory adjustment */
 #endif
         already_pressed.last_mask &= ~mask;
+        if (message == 'R')
+            already_pressed.auto_spin_loop = FALSE;
         if (message == 'T')
             already_pressed.turbo_mask &= ~already_pressed.last_mask;
         controllers[0].Value &= ~mask;
