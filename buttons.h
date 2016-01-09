@@ -28,6 +28,8 @@
 #include <stddef.h>
 #include "my_types.h"
 
+#define TURBO_BUTTON_INTERVAL           1
+
 /*
  * We need this to keep track of which control stick directions are currently
  * being used by the keyboard, as it is possible to press the control stick
@@ -50,6 +52,8 @@ typedef struct {
  */
     u16 turbo_mask;
     u16 last_mask;
+    int turbo_count;
+    int turbo_enabled;
 
 /*
  * rapid automatic control stick rotation to help with some annoying games

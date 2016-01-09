@@ -75,10 +75,13 @@ EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
 #endif
 
     assert(Control < MAX_CONTROLLERS);
-    controllers[Control].Value ^= already_pressed.turbo_mask;
+    assert(Keys != NULL);
+
+    if (already_pressed.turbo_enabled)
+        if (already_pressed.turbo_count++ % TURBO_BUTTON_INTERVAL == 0)
+            controllers[Control].Value ^= already_pressed.turbo_mask;
     buttons = controllers[Control].Value & 0x0000FFFFul;
 
-    assert(Keys != NULL);
     if ((buttons & control_stick_exception) == control_stick_exception) {
         controllers[Control].Value &= 0x0000FFFFul; /* analog stick reset */
         buttons ^= ENDIAN_M ? swap16by8(MASK_START_BUTTON) : MASK_START_BUTTON;
@@ -190,8 +193,11 @@ EXPORT void CALL WM_KeyDown(size_t wParam, ssize_t lParam)
             already_pressed.auto_spin_loop = TRUE;
             already_pressed.auto_spin_stage = 0;
         }
-        if (message == 'T')
+        if (message == 'T') {
+            already_pressed.turbo_enabled = TRUE;
+            already_pressed.turbo_count = 0;
             already_pressed.turbo_mask |= already_pressed.last_mask;
+        }
         controllers[0].Value |=  mask;
     }
     return;
@@ -235,8 +241,10 @@ EXPORT void CALL WM_KeyUp(size_t wParam, ssize_t lParam)
         already_pressed.last_mask &= ~mask;
         if (message == 'R')
             already_pressed.auto_spin_loop = FALSE;
-        if (message == 'T')
+        if (message == 'T') {
+            already_pressed.turbo_enabled = FALSE;
             already_pressed.turbo_mask &= ~already_pressed.last_mask;
+        }
         controllers[0].Value &= ~mask;
     }
     return;
