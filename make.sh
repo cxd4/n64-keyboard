@@ -8,6 +8,7 @@ FLAGS_ANSI="\
     -ansi \
     -pedantic \
     -Wall \
+    -fPIC \
     -DPLUGIN_API_VERSION=0x0101"
 
 C_FLAGS=$FLAGS_ANSI
