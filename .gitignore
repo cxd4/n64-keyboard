@@ -1,3 +1,6 @@
+# compilation output
+obj/
+
 # Compiled Object files
 *.slo
 *.lo
