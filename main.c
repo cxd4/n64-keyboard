@@ -6,8 +6,6 @@
 #include "buttons.h"
 #include "analog.h"
 
-/* to do:  Wasn't there some old design when this could be 8? */
-#define MAX_CONTROLLERS         4
 BUTTONS controllers[MAX_CONTROLLERS];
 
 static control_stick_activity already_pressed;
@@ -108,6 +106,7 @@ EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
     return;
 }
 
+extern CONTROL controls[MAX_CONTROLLERS];
 #if (SPECS_VERSION > 0x0100)
 EXPORT void CALL InitiateControllers(CONTROL_INFO ControlInfo)
 #else
@@ -121,22 +120,15 @@ EXPORT void CALL InitiateControllers(void * hMainWindow, CONTROL Controls[4])
 #endif
     register int i;
 
-    for (i = 0; i < MAX_CONTROLLERS; i++)
-    {
-        Controls[i].Present = FALSE;
-        Controls[i].RawData = FALSE;
-        Controls[i].Plugin = PLUGIN_NONE;
+    DllConfig(NULL);
+    for (i = 0; i < MAX_CONTROLLERS; i++) {
+        if (controls[i].Present >= 0)
+            Controls[i].Present = controls[i].Present;
+        if (controls[i].RawData >= 0)
+            Controls[i].RawData = controls[i].RawData;
+        if (controls[i].Plugin >= 0)
+            Controls[i].Plugin  = controls[i].Plugin;
     }
-
-/*
- * Raw data (low-level emulation of the controller serial commands) is not
- * yet emulated, and there is not a whole lot of open room for custom
- * settings to configure without it.  At the very least, Controller 1
- * should be plugged in, with mempak support from the core.
- */
-    Controls[0].Present = TRUE;
-    Controls[0].RawData = FALSE;
-    Controls[0].Plugin = PLUGIN_MEMPAK;
 
     RomOpen();
 #if (SPECS_VERSION == 0x0100)

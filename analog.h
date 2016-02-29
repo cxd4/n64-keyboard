@@ -24,6 +24,8 @@
 #define REVOLUTION_PRECISION            10
 #define ROTATE_ARC_PRECISION            (360.F / (REVOLUTION_PRECISION))
 
+#define MAX_CONTROLLERS                 (8 / 2)
+
 extern signed char clamp_stick(signed long magnitude);
 extern int stick_range(void);
 extern void stick_rotate(signed char * x, signed char * y, double degrees);
