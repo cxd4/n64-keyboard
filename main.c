@@ -52,7 +52,11 @@ EXPORT void CALL CloseDLL(void)
 
 EXPORT void CALL RomClosed(void)
 {
+    if (press_masks == NULL)
+        return; /* free(NULL) would seem to be a bad thing.  :) */
+
     free(press_masks);
+    press_masks = NULL;
     return;
 }
 
