@@ -67,7 +67,7 @@ EXPORT void CALL DllConfig(void * hParent)
 
     if (ferror(conf))
         fputs("Failed to read one or more bytes from settings file.\n", stderr);
-    while (fclose(conf) == 0)
+    while (fclose(conf) != 0)
         ;
     return;
 }
