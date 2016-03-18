@@ -21,8 +21,7 @@
  *     f(7)  =  43 spins / 10 seconds
  *     f(6)  = 100 spins / 10 seconds (too imprecise to work with Pedal Power)
  */
-#define REVOLUTION_PRECISION            10
-#define ROTATE_ARC_PRECISION            (360.F / (REVOLUTION_PRECISION))
+extern long arcs_per_second;
 
 #define MAX_CONTROLLERS                 (8 / 2)
 

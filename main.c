@@ -100,12 +100,14 @@ EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
         x = (Keys -> cont_pad.stick_y);
         y = (Keys -> cont_pad.stick_x);
         stick_rotate(
-            &x, &y, already_pressed.auto_spin_stage * ROTATE_ARC_PRECISION
+            &x, &y,
+            already_pressed.auto_spin_stage * (360 / (double)arcs_per_second)
         );
         (Keys -> cont_pad.stick_y) = x;
         (Keys -> cont_pad.stick_x) = y;
         already_pressed.auto_spin_stage =
-            (already_pressed.auto_spin_stage + 1) % REVOLUTION_PRECISION;
+            (already_pressed.auto_spin_stage + 1) % arcs_per_second
+        ;
     }
     return;
 }

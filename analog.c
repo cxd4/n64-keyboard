@@ -4,6 +4,8 @@
 #include "contr.h"
 extern BUTTONS controllers[];
 
+long arcs_per_second = 10;
+
 signed char clamp_stick(signed long magnitude)
 {
     if (magnitude < -128)

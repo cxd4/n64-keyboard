@@ -63,6 +63,11 @@ EXPORT void CALL DllConfig(void * hParent)
  * To do:
  * Per-ROM controller configuration?  Re-map buttons to other keys?
  */
+        if (strcmp(&line[0], "ARCS_PER_SEC") == 0) {
+            if (parsed_value > 0)
+                arcs_per_second = parsed_value;
+            continue;
+        }
     }
 
     if (ferror(conf))
