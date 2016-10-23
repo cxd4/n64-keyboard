@@ -7,7 +7,7 @@
 
 CONTROL controls[MAX_CONTROLLERS];
 
-EXPORT void CALL DllConfig(void * hParent)
+EXPORT void CALL DllConfig(void* hParent)
 {
     static char line[80 + 1];
     size_t number;
@@ -74,5 +74,8 @@ EXPORT void CALL DllConfig(void * hParent)
         fputs("Failed to read one or more bytes from settings file.\n", stderr);
     while (fclose(conf) != 0)
         ;
+
+    if (hParent != NULL)
+        return; /* no parent window handle implementation stuff here */
     return;
 }
