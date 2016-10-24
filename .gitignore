@@ -1,5 +1,7 @@
 # compilation output
 obj/
+*.asm
+*.exp
 
 # Compiled Object files
 *.slo
