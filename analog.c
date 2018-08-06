@@ -17,15 +17,15 @@ signed char clamp_stick(signed long magnitude)
 
 int stick_range(void)
 {
-    static const int magnitudes[] = {
+    static const u8 magnitudes[] = {
          80, /* hardware limitation:  Strongest real N64 stick presses do 80. */
-        127, /* software limitation (Hold Shift.):  stick_mask & 0xFF >= -128 */
+        128, /* software limitation (Hold Shift.):  stick_mask & 0xFF >= -128 */
          64, /* a little slow (Hold Ctrl.) */
          32, /* very slow (Hold Ctrl+Shift.) */
     };
     const int shift_amount = (ENDIAN_M ? 6 + 8 : 6 + 0);
 
-    return magnitudes[(controllers[0].Value >> shift_amount) & 3];
+    return (int)magnitudes[(controllers[0].Value >> shift_amount) & 3];
 }
 
 void stick_rotate(signed char * x, signed char * y, double degrees)
@@ -35,7 +35,7 @@ void stick_rotate(signed char * x, signed char * y, double degrees)
     double x2, y2;
     const int radius = stick_range();
     const double pi = 3.141592653589793;
-    const double arc_interval = pi * (degrees / 180);
+    const double arc_interval = pi * (degrees / 180.);
 
     x1 = *(x);
     y1 = *(y);

@@ -101,7 +101,7 @@ EXPORT void CALL GetKeys(int Control, BUTTONS * Keys)
         y = (signed char)(Keys -> cont_pad.stick_x);
         stick_rotate(
             &x, &y,
-            already_pressed.auto_spin_stage * (360 / (double)arcs_per_second)
+            already_pressed.auto_spin_stage * (360.0 / arcs_per_second)
         );
         (Keys -> cont_pad.stick_y) = x;
         (Keys -> cont_pad.stick_x) = y;
@@ -161,25 +161,25 @@ EXPORT void CALL WM_KeyDown(size_t wParam, ssize_t lParam)
     case MASK_STICK_UP:
         if (already_pressed.up)
             break;
-        pad->stick_x = clamp_stick(pad->stick_x + stick_range());
+        pad->stick_x = clamp_stick((long)(pad -> stick_x) + stick_range());
         already_pressed.up = 1;
         break;
     case MASK_STICK_DOWN:
         if (already_pressed.down)
             break;
-        pad->stick_x = clamp_stick(pad->stick_x - stick_range());
+        pad->stick_x = clamp_stick((long)(pad -> stick_x) - stick_range());
         already_pressed.down = 1;
         break;
     case MASK_STICK_RIGHT:
         if (already_pressed.right)
             break;
-        pad->stick_y = clamp_stick(pad->stick_y + stick_range());
+        pad->stick_y = clamp_stick((long)(pad -> stick_y) + stick_range());
         already_pressed.right = 1;
         break;
     case MASK_STICK_LEFT:
         if (already_pressed.left)
             break;
-        pad->stick_y = clamp_stick(pad->stick_y - stick_range());
+        pad->stick_y = clamp_stick((long)(pad -> stick_y) - stick_range());
         already_pressed.left = 1;
         break;
     default:
@@ -217,19 +217,19 @@ EXPORT void CALL WM_KeyUp(size_t wParam, ssize_t lParam)
     switch (mask)
     {
     case MASK_STICK_UP:
-        pad->stick_x = clamp_stick(pad->stick_x - stick_range());
+        pad->stick_x = clamp_stick((long)(pad -> stick_x) - stick_range());
         already_pressed.up = 0;
         break;
     case MASK_STICK_DOWN:
-        pad->stick_x = clamp_stick(pad->stick_x + stick_range());
+        pad->stick_x = clamp_stick((long)(pad -> stick_x) + stick_range());
         already_pressed.down = 0;
         break;
     case MASK_STICK_RIGHT:
-        pad->stick_y = clamp_stick(pad->stick_y - stick_range());
+        pad->stick_y = clamp_stick((long)(pad -> stick_y) - stick_range());
         already_pressed.right = 0;
         break;
     case MASK_STICK_LEFT:
-        pad->stick_y = clamp_stick(pad->stick_y + stick_range());
+        pad->stick_y = clamp_stick((long)(pad -> stick_y) + stick_range());
         already_pressed.left = 0;
         break;
     default:
