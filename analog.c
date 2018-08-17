@@ -5,6 +5,22 @@
 extern BUTTONS controllers[];
 
 long arcs_per_second = 10;
+static double pi(void)
+{
+    static double pi_final;
+    double old_approximation, base;
+
+    if (pi_final > 3.14 && pi_final < 3.15)
+        return (pi_final);
+    base = 0;
+    pi_final = 2;
+    do {
+        old_approximation = pi_final;
+        base = sqrt(base + 2);
+        pi_final = (pi_final * 2) / base;
+    } while (pi_final != old_approximation);
+    return (pi_final);
+}
 
 signed char clamp_stick(signed long magnitude)
 {
@@ -35,17 +51,16 @@ void stick_rotate(signed char * x, signed char * y, float degrees)
     double x2, y2;
 
     const int radius = stick_range();
-    const double pi = 3.141592653589793;
-    const double arc_interval = pi * (degrees / 180);
+    const double arc_interval = pi() * (degrees / 180);
 
     x1 = *(x);
     y1 = *(y);
 
     arc = asin(y1 / radius) + arc_interval;
     if (x1 <= 0 && y1 > 0)
-        arc += pi / 2; /* Translate from Q I to Q II. */
+        arc += pi() / 2; /* Translate from Q I to Q II. */
     if (y1 <= 0 && x1 < 0)
-        arc -= pi / 2; /* Translate from Q IV to Q III. */
+        arc -= pi() / 2; /* Translate from Q IV to Q III. */
 
     x2 = cos(arc);
     y2 = sin(arc);
