@@ -28,11 +28,12 @@ int stick_range(void)
     return (int)magnitudes[(controllers[0].Value >> shift_amount) & 3];
 }
 
-void stick_rotate(signed char * x, signed char * y, double degrees)
+void stick_rotate(signed char * x, signed char * y, float degrees)
 {
     double arc;
-    double x1, y1;
+    float x1, y1;
     double x2, y2;
+
     const int radius = stick_range();
     const double pi = 3.141592653589793;
     const double arc_interval = pi * (degrees / 180);
