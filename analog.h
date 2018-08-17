@@ -11,9 +11,8 @@
  * If that was necessary, using keyboard keys to rotate the control stick
  * would have been undetected by the game for such a precision requirement.
  *
- * Negative values should, in theory, yield the same results of spins done on
- * the absolute value of the negative precision clockwise instead of counter-
- * clockwise, but this has not been tested to work as well as CCW spins.
+ * Negative values for arcs_per_second just causes the same rotation interval
+ * to be calculated clockwise instead of counter-clockwise.
  *
  * Results from the Mecha Fly-Guy stick test in Mario Party:
  *     f(60) =  10 spins / 10 seconds (barely enough to draw Paddle Battle)
@@ -24,6 +23,7 @@
  *     f(8)  =  75 spins / 10 seconds (inconsistent with Zelda instant spin)
  *     f(7)  =  43 spins / 10 seconds
  *     f(6)  = 100 spins / 10 seconds (too imprecise to work with Pedal Power)
+ *     f(4)  = 150 spins / 10 seconds (least precise but fastest if it works)
  */
 extern long arcs_per_second;
 
@@ -31,7 +31,6 @@ extern long arcs_per_second;
 
 extern signed char clamp_stick(signed long magnitude);
 extern int stick_range(void);
-extern int quadrant(signed long x, signed long y);
 
 extern void stick_rotate(signed char * x, signed char * y, float degrees);
 
