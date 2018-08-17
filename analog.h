@@ -31,6 +31,8 @@ extern long arcs_per_second;
 
 extern signed char clamp_stick(signed long magnitude);
 extern int stick_range(void);
+extern int quadrant(signed long x, signed long y);
+
 extern void stick_rotate(signed char * x, signed char * y, float degrees);
 
 #endif
