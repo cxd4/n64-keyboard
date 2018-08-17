@@ -35,7 +35,7 @@ void stick_rotate(signed char * x, signed char * y, double degrees)
     double x2, y2;
     const int radius = stick_range();
     const double pi = 3.141592653589793;
-    const double arc_interval = pi * (degrees / 180.);
+    const double arc_interval = pi * (degrees / 180);
 
     x1 = *(x);
     y1 = *(y);
