@@ -143,19 +143,35 @@ EXPORT void CALL InitiateControllers(void * hMainWindow, CONTROL Controls[4])
     return;
 }
 
+/*
+ * Set the controller number for all future input, until the next request
+ * for a change of controller ID is made.
+ */
+static unsigned int last_cont_req = 0; /* defaulting to controller 1 */
+
 EXPORT void CALL WM_KeyDown(size_t wParam, ssize_t lParam)
 {
     size_t message;
     u16 mask;
     OS_CONT_PAD * pad;
 
-    pad = &controllers[0].cont_pad;
     message = wParam; /* normally the correct key code message */
     if (message == 0 && lParam > 0)
         message = (size_t)lParam; /* Mupen64 for Linux uses lParam instead. */
-
     message = filter_OS_key_code(message);
-    mask = press_masks[message];
+
+    switch (message) {
+        case '[':
+            last_cont_req = (last_cont_req - 1) % MAX_CONTROLLERS;
+            return;
+        case ']':
+            last_cont_req = (last_cont_req + 1) % MAX_CONTROLLERS;
+            return;
+        default:
+            mask = press_masks[message];
+    }
+
+    pad = &controllers[last_cont_req].cont_pad;
     switch (mask)
     {
     case MASK_STICK_UP:
@@ -196,7 +212,7 @@ EXPORT void CALL WM_KeyDown(size_t wParam, ssize_t lParam)
             already_pressed.turbo_count = 0;
             already_pressed.turbo_mask |= already_pressed.last_mask;
         }
-        controllers[0].Value |=  mask;
+        controllers[last_cont_req].Value |=  mask;
     }
     return;
 }
@@ -207,7 +223,7 @@ EXPORT void CALL WM_KeyUp(size_t wParam, ssize_t lParam)
     u16 mask;
     OS_CONT_PAD * pad;
 
-    pad = &controllers[0].cont_pad;
+    pad = &controllers[last_cont_req].cont_pad;
     message = wParam;
     if (message == 0 && lParam > 0)
         message = (size_t)lParam;
@@ -243,7 +259,7 @@ EXPORT void CALL WM_KeyUp(size_t wParam, ssize_t lParam)
             already_pressed.turbo_enabled = FALSE;
             already_pressed.turbo_mask &= ~already_pressed.last_mask;
         }
-        controllers[0].Value &= ~mask;
+        controllers[last_cont_req].Value &= ~mask;
     }
     return;
 }
